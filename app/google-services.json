@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067780687791",
+    "project_id": "network-data-control",
+    "storage_bucket": "network-data-control.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067780687791:android:9c10ae4ea5c5fd8962115a",
+        "android_client_info": {
+          "package_name": "com.example.network_data_control"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR0trpaSpXXzH-LWP8cGYSYnbMBr6oZew"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
