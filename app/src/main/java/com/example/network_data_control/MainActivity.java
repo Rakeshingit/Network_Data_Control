@@ -1,11 +1,13 @@
 package com.example.network_data_control;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
+
+import android.content.Intent;
 import android.os.Bundle;
+import android.Manifest;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 
 public class MainActivity extends AppCompatActivity implements NetworkMonitor.OnNetworkChangeListener {
@@ -28,6 +30,9 @@ public class MainActivity extends AppCompatActivity implements NetworkMonitor.On
             // Permission is already granted, proceed with initializing NetworkMonitor
             initializeNetworkMonitor();
         }
+
+        // Start the background service for network monitoring
+        startService(new Intent(this, NetworkMonitoringService.class));
     }
 
     // Initialize NetworkMonitor
