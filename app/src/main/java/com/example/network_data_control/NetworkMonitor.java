@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
@@ -72,11 +73,33 @@ public class NetworkMonitor {
                 networkChangeListener.onNetworkChange(networkStatus);
             }
             showNotification("Network status changed", "Current network: " + networkStatus);
+            playNotificationSound(networkStatus); // Play notification sound
         } catch (SecurityException e) {
             Log.e("NetworkMonitor", "SecurityException: " + e.getMessage());
         }
     }
 
+    private void playNotificationSound(String networkType) {
+        // Determine notification sound based on network type
+        int soundResourceId = 0;
+        switch (networkType) {
+            case "LTE":
+                soundResourceId = R.raw.four_g_notification_sound;
+                break;
+            case "5G":
+                soundResourceId = R.raw.five_g_notification_sound;
+                break;
+            default:
+                // Use default notification sound or handle other cases
+                break;
+        }
+
+        // Play the notification sound if a valid resource ID is specified
+        if (soundResourceId != 0) {
+            MediaPlayer mediaPlayer = MediaPlayer.create(context, soundResourceId);
+            mediaPlayer.start();
+        }
+    }
 
     private String getNetworkStatus(int networkType) {
         switch (networkType) {
@@ -95,6 +118,7 @@ public class NetworkMonitor {
                 NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Network Changes", NotificationManager.IMPORTANCE_DEFAULT);
                 notificationManager.createNotificationChannel(channel);
             }
+
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(android.R.drawable.ic_dialog_info) // Use the default system icon
                     .setContentTitle(title)
