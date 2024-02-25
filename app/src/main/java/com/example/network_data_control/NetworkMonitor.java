@@ -1,5 +1,7 @@
 package com.example.network_data_control;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,18 +12,22 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class NetworkMonitor {
+    private static final String CHANNEL_ID = "network_notification_channel";
+    private static final int NOTIFICATION_ID = 123;
+
     private Context context;
     private TelephonyManager telephonyManager;
+    private NotificationManagerCompat notificationManager;
     private OnNetworkChangeListener networkChangeListener;
 
     public NetworkMonitor(Context context) {
         this.context = context;
         telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        notificationManager = NotificationManagerCompat.from(context);
         registerNetworkChangeReceiver();
         registerServiceStateListener();
     }
@@ -35,7 +41,7 @@ public class NetworkMonitor {
     }
 
     private void registerNetworkChangeReceiver() {
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
         context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -54,27 +60,49 @@ public class NetworkMonitor {
     }
 
     private void handleNetworkChange() {
-        // Check for the READ_PHONE_STATE permission
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Handle the case where permission is not granted. You can request the permission here.
+        if (context.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             Log.e("NetworkMonitor", "READ_PHONE_STATE permission not granted");
             return;
         }
-        int networkType = telephonyManager.getDataNetworkType();
-        if (networkType == TelephonyManager.NETWORK_TYPE_LTE) {
-            showToast("LTE network detected.");
+
+        try {
+            int networkType = telephonyManager.getDataNetworkType();
+            String networkStatus = getNetworkStatus(networkType);
             if (networkChangeListener != null) {
-                networkChangeListener.onNetworkChange("LTE");
+                networkChangeListener.onNetworkChange(networkStatus);
             }
-        } else if (networkType == TelephonyManager.NETWORK_TYPE_NR) {
-            showToast("5G network detected.");
-            if (networkChangeListener != null) {
-                networkChangeListener.onNetworkChange("5G");
-            }
+            showNotification("Network status changed", "Current network: " + networkStatus);
+        } catch (SecurityException e) {
+            Log.e("NetworkMonitor", "SecurityException: " + e.getMessage());
         }
     }
 
-    private void showToast(String message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+
+    private String getNetworkStatus(int networkType) {
+        switch (networkType) {
+            case TelephonyManager.NETWORK_TYPE_LTE:
+                return "LTE";
+            case TelephonyManager.NETWORK_TYPE_NR:
+                return "5G";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private void showNotification(String title, String content) {
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Network Changes", NotificationManager.IMPORTANCE_DEFAULT);
+                notificationManager.createNotificationChannel(channel);
+            }
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info) // Use the default system icon
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            notificationManager.notify(NOTIFICATION_ID, builder.build());
+        } else {
+            Log.e("NetworkMonitor", "Notification permission not granted");
+        }
     }
 }

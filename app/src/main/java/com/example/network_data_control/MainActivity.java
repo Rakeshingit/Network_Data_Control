@@ -1,13 +1,13 @@
 package com.example.network_data_control;
 
-
-import android.content.Intent;
-import android.os.Bundle;
 import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 
 public class MainActivity extends AppCompatActivity implements NetworkMonitor.OnNetworkChangeListener {
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements NetworkMonitor.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        networkStatusTextView = findViewById(R.id.NetStatus); // Reference to the TextView
+        networkStatusTextView = findViewById(R.id.NetStatus);
 
         // Check if permission is not granted
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
